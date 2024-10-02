@@ -1,0 +1,104 @@
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local teleportEnabled = false
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- Tạo GUI
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+
+-- Tạo menu chính
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 200, 0, 100)
+frame.Position = UDim2.new(0.5, -100, 0.5, -50)
+frame.BackgroundColor3 = Color3.new(0.1, 0.5, 1)  -- Màu xanh biển
+frame.BorderSizePixel = 0
+
+-- Tạo nút ON/OFF
+local toggleButton = Instance.new("TextButton", frame)
+toggleButton.Size = UDim2.new(0, 100, 0, 50)
+toggleButton.Position = UDim2.new(0.25, 0, 0.25, 0)
+toggleButton.Text = "OFF"
+toggleButton.BackgroundColor3 = Color3.new(1, 0, 0)  -- Màu đỏ khi tắt
+toggleButton.TextColor3 = Color3.new(1, 1, 1)
+
+-- Tạo nút xóa
+local deleteButton = Instance.new("TextButton", frame)
+deleteButton.Size = UDim2.new(0, 20, 0, 20)
+deleteButton.Position = UDim2.new(0, 0, 0, 0)
+deleteButton.Text = "X"
+deleteButton.BackgroundColor3 = Color3.new(1, 0, 0)
+deleteButton.TextColor3 = Color3.new(1, 1, 1)
+
+-- Tính năng di chuyển menu bằng chuột
+local dragging
+local dragInput
+local dragStart
+local startPos
+
+local function updateInput(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if dragging and input == dragInput then
+        updateInput(input)
+    end
+end)
+
+-- Kích hoạt/tắt chế độ teleport
+toggleButton.MouseButton1Click:Connect(function()
+    teleportEnabled = not teleportEnabled
+    if teleportEnabled then
+        toggleButton.Text = "ON"
+        toggleButton.BackgroundColor3 = Color3.new(0, 1, 0)  -- Màu xanh lá khi bật
+    else
+        toggleButton.Text = "OFF"
+        toggleButton.BackgroundColor3 = Color3.new(1, 0, 0)  -- Màu đỏ khi tắt
+    end
+end)
+
+-- Nút xóa
+deleteButton.MouseButton1Click:Connect(function()
+    frame:Destroy()  -- Xóa menu
+end)
+
+-- Tính năng teleport khi nhấn "G"
+mouse.KeyDown:Connect(function(key)
+    if key == "g" and teleportEnabled then
+        local targetPosition = mouse.Hit.p
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+
+        if humanoidRootPart then
+            local characterPosition = humanoidRootPart.Position
+            local distance = (targetPosition - characterPosition).Magnitude
+            
+            -- Kiểm tra khoảng cách hợp lệ để TP
+            if distance >= 1 and distance <= 250 then
+                -- Dịch chuyển đến vị trí với 1m cao hơn
+                humanoidRootPart.CFrame = CFrame.new(targetPosition.X, targetPosition.Y + 1, targetPosition.Z)
+            end
+        end
+    end
+end)
