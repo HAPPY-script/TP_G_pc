@@ -107,3 +107,43 @@ mouse.KeyDown:Connect(function(key)
         end
     end
 end)
+
+--animation
+
+-- Lấy các dịch vụ cần thiết
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+-- Hàm để khởi tạo và phát animation
+local function playAnimationOnce()
+    local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local Humanoid = Character:WaitForChild("Humanoid")
+    
+    -- Tạo animation
+    local Animation = Instance.new("Animation")
+    Animation.AnimationId = "rbxassetid://17555632156" -- Thay ID này bằng ID bạn muốn 
+
+    -- Tải animation và phát
+    local AnimationTrack = Humanoid:LoadAnimation(Animation)
+    AnimationTrack:Play()
+end
+
+-- Kiểm tra sự kiện bấm phím Y
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.G then
+        playAnimationOnce()
+    end
+end)
+
+-- Đảm bảo rằng khi nhân vật hồi sinh, script sẽ tự động chạy lại
+LocalPlayer.CharacterAdded:Connect(function()
+    -- Bắt sự kiện phím Y sau khi hồi sinh
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        if input.KeyCode == Enum.KeyCode.G then
+            playAnimationOnce()
+        end
+    end)
+end)
