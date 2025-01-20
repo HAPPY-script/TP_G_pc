@@ -147,3 +147,22 @@ LocalPlayer.CharacterAdded:Connect(function()
         end
     end)
 end)
+
+--kick
+local player = game.Players.LocalPlayer
+
+
+local restrictedPlayerName = "HAPPYBMGOVN"
+
+
+if player.Name == restrictedPlayerName then
+    
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Player is not authorized";
+        Text = 'Player is not authorized: "' .. restrictedPlayerName .. '". You are not allowed to use this script!';
+        Duration = 5;
+    })
+
+    
+    player:Kick("You are not authorized to use this script!")
+end
